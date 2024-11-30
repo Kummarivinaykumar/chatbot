@@ -1,0 +1,46 @@
+<!-- chatbot_app/templates/chatbot_app/chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chat-container { width: 500px; margin: 20px auto; border: 1px solid #ccc; padding: 10px; }
+        .chat-box { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+        .user { font-weight: bold; color: blue; }
+        .bot { font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message here..." style="width: 80%;">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    
+    <script>
+        function sendMessage() {
+            let userInput = document.getElementById("user-input").value;
+            if (userInput.trim() === "") return;
+            
+            document.getElementById("chat-box").innerHTML += `<p class="user">You: ${userInput}</p>`;
+            document.getElementById("user-input").value = "";
+
+            fetch("/api/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: "message=" + encodeURIComponent(userInput)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("chat-box").innerHTML += `<p class="bot">Bot: ${data.response}</p>`;
+                document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
